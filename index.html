@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Web Navigator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lucide-icons@latest/dist/umd/lucide.min.js">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="DragDropTouch.js"></script>
+</head>
+<body class="bg-white min-h-screen font-sans text-gray-900 transition-all duration-300 overflow-x-hidden">
+    <div id="background-overlay" class="fixed inset-0 bg-no-repeat bg-cover pointer-events-none transition-opacity duration-300 opacity-0"></div>
+    
+    <div class="relative z-10 min-h-screen flex flex-col">
+        <header class="py-4 px-6 flex justify-end">
+            <button id="settings-btn" class="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200">
+                <i data-lucide="settings" class="w-5 h-5"></i>
+            </button>
+        </header>
+        
+        <main class="flex-1 flex flex-col items-center px-6 pt-8 md:pt-16">
+            <div class="w-full max-w-4xl mx-auto">
+                <div class="search-container mb-12">
+                    <div class="relative">
+                        <div id="search-engine-icon" class="absolute left-4 top-1/2 transform -translate-y-1/2 cursor-pointer">
+                            <img id="current-engine-icon" class="w-5 h-5 rounded-sm" src="" alt="Search engine">
+                        </div>
+                        
+                        <input id="search-input" type="text" placeholder="Search the web..." 
+                               class="w-full py-3 pl-12 pr-4 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all">
+                        
+                        <div id="search-engine-dropdown" class="hidden absolute left-0 top-full mt-2 w-full max-h-80 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg z-20">
+                            <div class="p-3 border-b border-gray-100">
+                                <div class="text-sm font-medium text-gray-700">Select a search engine</div>
+                            </div>
+                            <div id="search-engines-list" class="py-2">
+                                <!-- Search engines will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="sites-container">
+                    <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4" id="sites-grid">
+                        <!-- Site cards will be populated here -->
+                        <div id="add-site-card" class="site-card flex flex-col items-center justify-center p-4 border border-gray-200 rounded-lg bg-gray-0 hover:bg-gray-100 cursor-pointer transition-colors duration-200">
+                            <div class="w-6 h-6 flex items-center justify-center text-gray-500">
+                                <i data-lucide="plus" class="w-5 h-5"></i>
+                            </div>
+                            <div class="mt-2 text-xs text-gray-500">Add site</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add site modal -->
+    <div id="add-site-modal" class="modal hidden fixed inset-0 z-50">
+        <div class="modal-backdrop absolute inset-0 bg-black bg-opacity-25"></div>
+        <div class="modal-container absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md">
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Add new site</h3>
+                    <form id="add-site-form">
+                        <div class="mb-4">
+                            <label for="site-url" class="block text-sm font-medium text-gray-700 mb-1">URL</label>
+                            <input type="url" id="site-url" class="w-full p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200" placeholder="https://example.com" required>
+                        </div>
+                        <div class="mb-4">
+                            <label for="site-name" class="block text-sm font-medium text-gray-700 mb-1">Name (auto-detected)</label>
+                            <input type="text" id="site-name" class="w-full p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200" placeholder="Site name">
+                        </div>
+                        <div class="preview-container mb-4 hidden">
+                            <div class="text-sm font-medium text-gray-700 mb-1">Preview</div>
+                            <div class="flex items-center">
+                                <img id="site-favicon-preview" class="w-6 h-6 mr-2 border border-gray-100 rounded-sm" src="" alt="">
+                                <span id="site-name-preview" class="text-sm"></span>
+                            </div>
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="button" class="modal-cancel mr-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-200">Cancel</button>
+                            <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-800">Add</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit site modal -->
+    <div id="edit-site-modal" class="modal hidden fixed inset-0 z-50">
+        <div class="modal-backdrop absolute inset-0 bg-black bg-opacity-25"></div>
+        <div class="modal-container absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md">
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Edit site</h3>
+                    <form id="edit-site-form">
+                        <input type="hidden" id="edit-site-id">
+                        <div class="mb-4">
+                            <label for="edit-site-url" class="block text-sm font-medium text-gray-700 mb-1">URL</label>
+                            <input type="url" id="edit-site-url" class="w-full p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200" placeholder="https://example.com" required>
+                        </div>
+                        <div class="mb-4">
+                            <label for="edit-site-name" class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                            <input type="text" id="edit-site-name" class="w-full p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200" placeholder="Site name" required>
+                        </div>
+                        <div class="preview-container mb-4">
+                            <div class="text-sm font-medium text-gray-700 mb-1">Preview</div>
+                            <div class="flex items-center">
+                                <img id="edit-site-favicon-preview" class="w-6 h-6 mr-2 border border-gray-100 rounded-sm" src="" alt="">
+                                <span id="edit-site-name-preview" class="text-sm"></span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between">
+                            <button type="button" id="delete-site-btn" class="px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-md hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-200">Delete</button>
+                            <div>
+                                <button type="button" class="modal-cancel mr-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-200">Cancel</button>
+                                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-800">Save</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings modal -->
+    <div id="settings-modal" class="modal hidden fixed inset-0 z-50">
+        <div class="modal-backdrop absolute inset-0 bg-black bg-opacity-25"></div>
+        <div class="modal-container absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl max-h-[90vh] overflow-auto">
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-medium text-gray-900">Settings</h2>
+                        <button class="modal-cancel text-gray-500 hover:text-gray-700">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="mb-8">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Background</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <div class="mb-4">
+                                    <label for="background-url" class="block text-sm font-medium text-gray-700 mb-1">Background image URL</label>
+                                    <input type="url" id="background-url" class="w-full p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200" placeholder="https://example.com/image.jpg">
+                                </div>
+                                <div class="mb-4">
+                                    <label for="background-opacity" class="block text-sm font-medium text-gray-700 mb-1">Opacity: <span id="opacity-value">0.2</span></label>
+                                    <input type="range" id="background-opacity" min="0" max="1" step="0.05" value="0.2" class="w-full">
+                                </div>
+                                <div class="mb-4">
+                                    <label for="background-blur" class="block text-sm font-medium text-gray-700 mb-1">Blur: <span id="blur-value">4px</span></label>
+                                    <input type="range" id="background-blur" min="0" max="20" step="1" value="4" class="w-full">
+                                </div>
+                            </div>
+                            <div class="bg-gray-100 rounded-lg overflow-hidden relative h-40">
+                                <div id="background-preview" class="absolute inset-0 bg-center bg-cover bg-no-repeat"></div>
+                                <div class="absolute inset-0 flex items-center justify-center text-gray-400">Preview</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-8">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-medium text-gray-900">Search Engines</h3>
+                            <button id="add-search-engine" class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded flex items-center gap-1">
+                                <i data-lucide="plus" class="w-4 h-4"></i>
+                                <span>Add</span>
+                            </button>
+                        </div>
+                        <div class="border border-gray-200 rounded-lg overflow-hidden">
+                            <div id="search-engines-settings-list" class="divide-y divide-gray-100">
+                                <!-- Search engines will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Data</h3>
+                        <div class="flex gap-3">
+                            <button id="export-data" class="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-200">
+                                <i data-lucide="download" class="w-4 h-4"></i>
+                                <span>Export data</span>
+                            </button>
+                            <button id="import-data" class="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-200">
+                                <i data-lucide="upload" class="w-4 h-4"></i>
+                                <span>Import data</span>
+                            </button>
+                            <input type="file" id="import-file" accept=".json" class="hidden">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add search engine modal -->
+    <div id="add-search-engine-modal" class="modal hidden fixed inset-0 z-50">
+        <div class="modal-backdrop absolute inset-0 bg-black bg-opacity-25"></div>
+        <div class="modal-container absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md">
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Add search engine</h3>
+                    <form id="add-search-engine-form">
+                        <div class="mb-4">
+                            <label for="search-engine-url" class="block text-sm font-medium text-gray-700 mb-1">Search URL</label>
+                            <input type="text" id="search-engine-url" class="w-full p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200" placeholder="https://example.com/search?q=%s" required>
+                            <p class="text-xs text-gray-500 mt-1">Use %s where the search query should go</p>
+                        </div>
+                        <div class="mb-4">
+                            <label for="search-engine-name" class="block text-sm font-medium text-gray-700 mb-1">Name (auto-detected)</label>
+                            <input type="text" id="search-engine-name" class="w-full p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200" placeholder="Search engine name">
+                        </div>
+                        <div class="preview-container mb-4 hidden">
+                            <div class="text-sm font-medium text-gray-700 mb-1">Preview</div>
+                            <div class="flex items-center">
+                                <img id="search-engine-favicon-preview" class="w-6 h-6 mr-2 border border-gray-100 rounded-sm" src="" alt="">
+                                <span id="search-engine-name-preview" class="text-sm"></span>
+                            </div>
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="button" class="modal-cancel mr-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-200">Cancel</button>
+                            <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-800">Add</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit search engine modal -->
+    <div id="edit-search-engine-modal" class="modal hidden fixed inset-0 z-50">
+        <div class="modal-backdrop absolute inset-0 bg-black bg-opacity-25"></div>
+        <div class="modal-container absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md">
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Edit search engine</h3>
+                    <form id="edit-search-engine-form">
+                        <input type="hidden" id="edit-search-engine-id">
+                        <div class="mb-4">
+                            <label for="edit-search-engine-url" class="block text-sm font-medium text-gray-700 mb-1">Search URL</label>
+                            <input type="text" id="edit-search-engine-url" class="w-full p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200" placeholder="https://example.com/search?q=%s" required>
+                            <p class="text-xs text-gray-500 mt-1">Use %s where the search query should go</p>
+                        </div>
+                        <div class="mb-4">
+                            <label for="edit-search-engine-name" class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                            <input type="text" id="edit-search-engine-name" class="w-full p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200" placeholder="Search engine name" required>
+                        </div>
+                        <div class="preview-container mb-4">
+                            <div class="text-sm font-medium text-gray-700 mb-1">Preview</div>
+                            <div class="flex items-center">
+                                <img id="edit-search-engine-favicon-preview" class="w-6 h-6 mr-2 border border-gray-100 rounded-sm" src="" alt="">
+                                <span id="edit-search-engine-name-preview" class="text-sm"></span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between">
+                            <button type="button" id="delete-search-engine-btn" class="px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-md hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-200">Delete</button>
+                            <div>
+                                <button type="button" class="modal-cancel mr-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-200">Cancel</button>
+                                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-800">Save</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="store.js"></script>
+    <script src="app.js"></script>
+    <script>
+    window.addEventListener("wheel", (e)=> {
+      const isPinching = e.ctrlKey
+      if(isPinching) e.preventDefault()
+    }, { passive: false })
+    </script>
+</body>
+</html>
