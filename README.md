@@ -1,7 +1,7 @@
 # navsite
-Website navigation for new tab page.
+<br>Website navigation for new tab page.
 Supports adding favorite websites, search engines, and changing the background image.
-Preview：
+<br>Preview：
 ![示例图片](preview/all.jpg)
-Demo：https://nav.riiio.top/
+<br>Demo：https://nav.riiio.top/ <br>
 The demo is for trial purposes only. The project is under the MIT license, so you are free to deploy and use it yourself.
