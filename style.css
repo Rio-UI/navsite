@@ -1,0 +1,113 @@
+.font-geist-mono {
+    font-family: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
+}
+
+/* Toggle Switch */
+input:checked ~ .dot {
+    transform: translateX(100%);
+}
+
+input:checked + .block {
+    background-color: #4f46e5;
+}
+
+/* Website Card Styles */
+.website-card {
+    cursor: pointer;
+    user-select: none;
+    min-height: 100px;
+    transition: all 0.2s ease;
+}
+
+.website-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px);
+}
+
+.website-card.dragging {
+    opacity: 0.5;
+    z-index: 10;
+}
+
+/* Search Engine List Item */
+.search-engine-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.search-engine-item:hover {
+    background-color: #f5f6f7;
+}
+
+.search-engine-item.selected {
+    background-color: #ffffff;
+}
+
+/* Sortable Search Engines */
+.search-engine-settings-item {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    background-color: white;
+    cursor: move;
+    user-select: none;
+}
+
+.search-engine-settings-item.dragging {
+    opacity: 0.5;
+    z-index: 10;
+}
+
+/* Settings sections */
+.settings-section {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.settings-section:last-child {
+    border-bottom: none;
+}
+
+/* Range slider styling */
+input[type=range] {
+    -webkit-appearance: none;
+    height: 7px;
+    border-radius: 5px;
+    background: #e5e7eb;
+    outline: none;
+}
+
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #4f46e5;
+    cursor: pointer;
+}
+
+input[type=range]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #4f46e5;
+    cursor: pointer;
+    border: none;
+}
+
+/* Prevent text selection */
+.no-select {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
